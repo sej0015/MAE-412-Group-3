@@ -1,0 +1,28 @@
+clear
+clc
+close all
+rosshutdown % shutdown any previous node
+rosinit % initialize a ros node
+
+robot_name = "smart2_02"; %Name of the robot group to subscribe to
+
+%Initialize Publisher
+cmd_vel = rospublisher(robot_name+'/cmd_vel', 'geometry_msgs/Twist');
+cmd_vel_message = rosmessage(cmd_vel);
+
+%
+% cmd_vel_message.Linear.X = -0.5; % Position in radians
+% cmd_vel_message.Angular.Z = 0.0; %%
+% 
+% for n=1:100
+%     pause(.01);
+%     send(cmd_vel, cmd_vel_message)
+% end
+
+cmd_vel_message.Linear.X = 0; % Position in radians
+cmd_vel_message.Angular.Z = ; %%
+
+for n=1:100
+    pause(.01);
+    send(cmd_vel, cmd_vel_message)
+end
