@@ -2,7 +2,6 @@ clear
 clc
 close all
 
-
 rosshutdown % shutdown any previous node
 rosinit % initialize a ros node
 
