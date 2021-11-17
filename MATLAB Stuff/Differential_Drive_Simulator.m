@@ -48,14 +48,14 @@ for i = 1:length(time)-1
     [Ax(i+1), Ay(i+1), Az(i+1)] = FrameConversion(Ax_b, Ay_b, Az_b, yaw(i));
     [x(i+1), y(i+1), z(i+1), Vx(i+1), Vy(i+1), Vz(i+1), yaw(i+1), yaw_rate(i+1)] = Kinematics(x(i), y(i), z(i), Vx(i), Vy(i), Vz(i), yaw(i), yaw_rate(i), alpha_yaw, Ax(i+1), Ay(i+1), Az(i+1), Ts);
     
-    
-    plot(x(1:i), y(1:i), 'b');
-    hold on
-    plot(goal_points(:,1), goal_points(:,2), 'ok');
-    hold off
-    xlim([-5, 15]);
-    ylim([-5, 15]);
-    pause(0.001);
+%     
+%     plot(x(1:i), y(1:i), 'b');
+%     hold on
+%     plot(goal_points(:,1), goal_points(:,2), 'ok');
+%     hold off
+%     xlim([-5, 15]);
+%     ylim([-5, 15]);
+%     pause(0.001);
 end
 
     plot(x(1:i), y(1:i), 'b');
