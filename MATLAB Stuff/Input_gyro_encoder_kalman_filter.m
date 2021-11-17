@@ -1,7 +1,8 @@
 
 Ts = .2; %sec, sampling time
 
-dest_point = [3;0]; %m
+dest_points = [3,3,0,0;...
+               0,3,3,0]; %m
 SV_post = [0;0;0]; %initial guesses
 P_post = eye(3); %initial guesses
 Q = [1,0,0;...
@@ -11,12 +12,14 @@ R = [1,0,0;...
      0,1,0;...
      0,0,1];  %cov matrix
 mag_delP = 3;
+j = 1;
 %% loop should start here
 
 while mag_delP >= .1
     %kalman filter here
     %cmd_vel: need this for the kalman filter
     %cmd_r: need this for the kalman filter
+    % Recieve signals from robot
 
     enc_vel = %velocity from encoders
     gyro_r = %yawrate from gyro
@@ -46,21 +49,28 @@ while mag_delP >= .1
     P_post = (eye(2) - K_k*H_k)*P_prior;
 
     % controller here
-    delP = dest_point - SV_post(1:2,1);
+    delP = dest_points(:,j) - SV_post(1:2,1);
     mag_delP = sqrt(delP(1)^2 + delP(2)^2); %m
-    delpsi = atan(delP(2)/delP(1));
-
-
-    if mag_delP >= .1 %m drive forward if not at point
-        cmd_vel = .2; %m/s
-    else
-        cmd_vel = 0; %m/s
-    end
+    delpsi = atan(delP(2)/delP(1)) - SV_post(3,1);
 
     cmd_r = delpsi/Ts;
     if cmd_r >= max_r
         cmd_r = max_r;
+    elseif cmd_r <= -max_r
+        cmd_r = -max_r;
     end
+    
+    if delpsi < .1745
+        if mag_delP >= .1 %m drive forward if not at point
+            cmd_vel = .2; %m/s
+        else
+            cmd_vel = 0; %m/s
+            j = j + 1;
+        end
+    end
+    
+    %still need to send signals to robot
+    
     
     i = i + 1;
     Time = (i-1)*Ts;
