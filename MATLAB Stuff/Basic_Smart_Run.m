@@ -14,7 +14,7 @@ global wheel_speed wheel_yaw_rate
 rossubscriber("/smart2_02/odom", @odom_callback, "DataFormat", "struct");
 
 global marker_0_measure marker_1_measure marker_3_measure marker_0_pose marker_1_pose marker_3_pose
-rossubscriber("/fiducial_transforms", @marker_callback, "DataFormat", "struct");
+rossubscriber('/marker_points', @marker_callback, "DataFormat", "struct");
 marker_0_pose(1, 1) = 0;
 marker_0_pose(2, 1) = 0;
 marker_0_pose(3, 1) = 0;
@@ -97,29 +97,29 @@ end
 
 function marker_callback(~, msg)
     global x marker_0_measure marker_1_measure marker_3_measure marker_0_pose marker_1_pose marker_3_pose
-    for i = 1:length(msg.transforms)
-        if msg.transforms(i).id == 0
-            marker_0_measure(1, end + 1) = msg.transforms(i).transform.translation.x;
-            marker_0_measure(2, end + 1) = msg.transforms(i).transform.translation.y;
-            marker_0_measure(3, end + 1) = msg.transforms(i).transform.translation.z;
+    for i = 1:length(msg.poses)
+        if msg.poses(i).orientation.w == 0
+            marker_0_measure(1, end + 1) = msg.poses(i).position.x;
+            marker_0_measure(2, end + 1) = msg.poses(i).position.y;
+            marker_0_measure(3, end + 1) = msg.poses(i).position.z;
             psi = x(3, end)+1*pi/2;
             marker_0_pose(:, end+1) = ([cos(psi), -sin(psi), 0;
                             sin(psi), cos(psi), 0;
                             0, 0, 1] * (marker_0_measure(:, end) + [-0.06; +0.11; 0])) + [x(1:2, end); 0];
         end
-        if msg.transforms(i).id == 1
-            marker_1_measure(1, end + 1) = msg.transforms(i).transform.translation.x;
-            marker_1_measure(2, end + 1) = msg.transforms(i).transform.translation.y;
-            marker_1_measure(3, end + 1) = msg.transforms(i).transform.translation.z;
+        if msg.poses(i).orientation.w == 1
+            marker_1_measure(1, end + 1) = msg.poses(i).position.x;
+            marker_1_measure(2, end + 1) = msg.poses(i).position.y;
+            marker_1_measure(3, end + 1) = msg.poses(i).position.z;
             psi = x(3, end)+1*pi/2;
             marker_1_pose(:, end+1) = ([cos(psi), -sin(psi), 0;
                             sin(psi), cos(psi), 0;
                             0, 0, 1] * (marker_1_measure(:, end) + [-0.06; +0.11; 0])) + [x(1:2, end); 0];
         end
-        if msg.transforms(i).id == 3
-            marker_3_measure(1, end + 1) = msg.transforms(i).transform.translation.x;
-            marker_3_measure(2, end + 1) = msg.transforms(i).transform.translation.y;
-            marker_3_measure(3, end + 1) = msg.transforms(i).transform.translation.z;
+        if msg.poses(i).orientation.w == 3
+            marker_3_measure(1, end + 1) = msg.poses(i).position.x;
+            marker_3_measure(2, end + 1) = msg.poses(i).position.y;
+            marker_3_measure(3, end + 1) = msg.poses(i).position.z;
             psi = x(3, end)+1*pi/2;
             marker_3_pose(:, end+1) = ([cos(psi), -sin(psi), 0;
                             sin(psi), cos(psi), 0;
