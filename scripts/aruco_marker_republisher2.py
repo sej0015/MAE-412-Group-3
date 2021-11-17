@@ -19,10 +19,7 @@ def transform_callback(fiducial_array: FiducialTransformArray):
         pose_msgs.poses(i).position.x = fiducial_array.transforms(i).transform.translation.x
         pose_msgs.poses(i).position.y = fiducial_array.transforms(i).transform.translation.y
         pose_msgs.poses(i).position.z = fiducial_array.transforms(i).transform.translation.z
-        pose_msgs.poses(i).orientation.x = fiducial_array.transforms(i).transform.rotation.x
-        pose_msgs.poses(i).orientation.y = fiducial_array.transforms(i).transform.rotation.y
-        pose_msgs.poses(i).orientation.z = fiducial_array.transforms(i).transform.rotation.z
-        pose_msgs.poses(i).orientation.w = fiducial_array.transforms(i).transform.rotation.w
+        pose_msgs.poses(i).orientation.w = fiducial_array.transforms(i).id
         ARUCO_REPUB.publish(pose_msgs)
 
 
