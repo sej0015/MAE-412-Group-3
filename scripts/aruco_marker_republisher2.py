@@ -3,7 +3,7 @@
 import rospy
 from rospy import Publisher, Rate, Subscriber
 from fiducial_msgs.msg import FiducialTransformArray
-from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import PoseArray, Pose
 from typing import List
 
 RATE_VAL = 10;
@@ -16,10 +16,11 @@ def transform_callback(fiducial_array: FiducialTransformArray):
     pose_msgs = PoseArray()
     pose_msgs.header = fiducial_array.header
     for i in range(len(fiducial_array.transforms)):
-        pose_msgs.poses(i).position.x = fiducial_array.transforms(i).transform.translation.x
-        pose_msgs.poses(i).position.y = fiducial_array.transforms(i).transform.translation.y
-        pose_msgs.poses(i).position.z = fiducial_array.transforms(i).transform.translation.z
-        pose_msgs.poses(i).orientation.w = fiducial_array.transforms(i).id
+        pose_msgs.poses.append(Pose())
+        pose_msgs.poses[i].position.x = fiducial_array.transforms[i].transform.translation.x
+        pose_msgs.poses[i].position.y = fiducial_array.transforms[i].transform.translation.y
+        pose_msgs.poses[i].position.z = fiducial_array.transforms[i].transform.translation.z
+        pose_msgs.poses[i].orientation.w = fiducial_array.transforms[i].fiducial_id
         ARUCO_REPUB.publish(pose_msgs)
 
 

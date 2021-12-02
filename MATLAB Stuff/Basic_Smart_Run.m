@@ -3,6 +3,7 @@ clear global
 close all
 clc
 
+
 rosshutdown
 rosinit
 
@@ -11,16 +12,16 @@ x(:, 1) = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]'; %x pos, y pos, z pos in global 
 
 %% Setup Subscribers and Publishers
 global yaw_rate
-rossubscriber("/smart2_02/imu/data", @imu_callback, "DataFormat","struct");
+yaw_rate_sub = rossubscriber('/smart2_02/imu/data', @imu_callback, 'DataFormat','struct');
 yaw_rate = 0;
 
 global wheel_speed wheel_yaw_rate
-rossubscriber("/smart2_02/odom", @odom_callback, "DataFormat", "struct");
+odom_sub = rossubscriber('/smart2_02/odom', @odom_callback, 'DataFormat', 'struct');
 wheel_speed = 0;
 wheel_yaw_rate = 0;
 
 global marker_0_measure marker_1_measure marker_3_measure marker_0_pose marker_1_pose marker_3_pose
-rossubscriber('/marker_points', @marker_callback, "DataFormat", "struct");
+marker_sub = rossubscriber('/marker_points', @marker_callback, "DataFormat", "struct");
 marker_0_pose(1, 1) = 0;
 marker_0_pose(2, 1) = 0;
 marker_0_pose(3, 1) = 0;
@@ -57,6 +58,8 @@ k = 2;
 tic();
 time = 0;
 while time < total_time
+    %receive(yaw_rate_sub, 5);
+    
     new_time = toc();
     Ts = new_time - time;
     time = new_time;
@@ -107,7 +110,7 @@ title('yaw angle');
 %% Callback functions
 function imu_callback(~, msg)
     global yaw_rate
-    yaw_rate = msg.angular_velocity.z;
+    yaw_rate = double(msg.AngularVelocity.Z);
 end
 
 function odom_callback(~, msg)

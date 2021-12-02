@@ -39,5 +39,5 @@
     <remap from="/camera_info" to="$(arg camera)/camera_info"/>
   </node>
 
-  <node pkg="mae_412_pkg" name="aruco_republisher" type="aruco_marker_republisher.py" respawn="true" output="screen"/>
+  <node pkg="mae_412_pkg" name="aruco_republisher" type="aruco_marker_republisher2.py" respawn="true" output="screen"/>
 </launch>
