@@ -39,6 +39,7 @@ R = [1,0,0;...
      0,0,1];  %cov matrix
 mag_delP = 3;
 j = 1;
+loop_counter = 0;
 cmd_r = 0;
 cmd_vel = 0;
 max_r = 1;
@@ -53,8 +54,12 @@ while toc() < 5
 end
 
 yaw_bias = mean(yaw_vector);
+currentTime = toc();
 
 while true
+    Ts = toc() - currentTime;
+    currentTime = toc();
+    %disp(Ts);
     %kalman filter here
     %cmd_vel: need this for the kalman filter
     %cmd_r: need this for the kalman filter
@@ -90,12 +95,21 @@ while true
     S_k = H_k*P_prior*H_k' + R;
     K_k = P_prior*H_k'*inv(S_k);
     SV_post = SV_prior + K_k*r_k;
+    SV_post(1, 1) = mod(SV_post(1, 1), 2*pi);
     P_post = (eye(3) - K_k*H_k)*P_prior;
 
     % controller here
     delP = dest_points(:,j) - SV_post(2:3,1);
     mag_delP = sqrt(delP(1)^2 + delP(2)^2); %m
     delpsi = atan2(delP(2),delP(1)) - SV_post(1,1);
+    
+    if delpsi > pi
+        delpsi = delpsi - 2*pi;
+        disp('Too high');
+    elseif delpsi < -pi
+        delpsi = delpsi + 2*pi;
+        disp('Too low');
+    end
 
     fprintf('delpsi: %f\n', delpsi);
     disp(delP);
@@ -109,10 +123,10 @@ while true
         cmd_r = -max_r;
     end
     
-    kp_speed = 1;
+    kp_speed = 10;
     max_speed = 0.25;
     
-    if delpsi < .1745
+    if abs(delpsi) < .05 %A small allowable radian error
         if mag_delP >= .05 %m drive forward if not at point
             cmd_vel = kp_speed * mag_delP ; %m/s
             if cmd_vel > max_speed
@@ -121,6 +135,13 @@ while true
         else
             cmd_vel = 0; %m/s
             j = j + 1;
+            if j == 5
+                j = 1;
+                loop_counter = loop_counter + 1;
+                if loop_counter >= 3
+                    break
+                end
+            end
         end
     end
     
@@ -131,8 +152,8 @@ while true
     send(cmd_vel_pub, cmd_vel_message)
     
     i = i + 1;
-    Time = (i-1)*Ts;
-    pause(Ts)
+    %Time = (i-1)*Ts;
+    pause(0.05)
     
 end
 
