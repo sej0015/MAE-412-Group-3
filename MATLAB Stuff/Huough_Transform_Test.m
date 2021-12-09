@@ -11,12 +11,10 @@ rosshutdown % shutdown any previous node
 rosinit % initialize a ros node
 
 %Define Global Variables for Callback functions
-global imu_data;
-global mag_data;
+% global imu_data;
+% global mag_data;
 global camera_data;
-global count;
 
-count=0;
 
 robot_name = "smart2_02"; %Name of the robot group to subscribe to
 
@@ -35,18 +33,18 @@ send(cmd_vel, cmd_vel_message)
 %Subscribe a single message
 
 %Subscribing to Lidar
-lidar = rossubscriber(robot_name+'/scan');
-lidar_data = receive(lidar,10);
+% lidar = rossubscriber(robot_name+'/scan');
+% lidar_data = receive(lidar,10);
 %Subscribing to Battery_Charge
 battery_charge = rossubscriber(robot_name+'/battery/charge_ratio');
-battery_charge_data = receive(lidar,10);
+%battery_charge_data = receive(lidar,10);
 
 
 
 % Subscribing to IMU using callback functions:
-imu = rossubscriber(robot_name+'/imu/data',@imu_Callback);
-% Subscribing to Magnetometer using callback functions:
-mag = rossubscriber(robot_name+'/mag/data',@mag_Callback);
+% imu = rossubscriber(robot_name+'/imu/data',@imu_Callback);
+% % Subscribing to Magnetometer using callback functions:
+% mag = rossubscriber(robot_name+'/mag/data',@mag_Callback);
 % Subscribing to Camera using callback functions:
 camera = rossubscriber('/usb_cam/image_raw',@camera_Callback);
 
@@ -71,35 +69,28 @@ while(true)
     angles=[lines.theta];
     angVals=abs(angles);
     bigAngle = [];
-    negative=0;
     for i=1:length(angVals)
         if angVals(i)>45
-            bigAngle=[bigAngle,angVals(i)];
-            if angles(i)<0;
-                negative=1;
-            end
+            bigAngle=[bigAngle,angles(i)];
         end
     end
     error = pi/2 -(mean(bigAngle)*(pi/180));
-    cmd_vel_message.Linear.X = 0.0;%% Position in radians
-    if negative==1
-        cmd_vel_message.Angular.Z = 0.1*error;%%
-    else
-        cmd_vel_message.Angular.Z = -0.1*error;
-    end
+    %cmd_vel_message.Linear.X = 0.01;%% Position in radians
+    %cmd_vel_message.Angular.Z = 0.2*error;%%
     disp(mean(bigAngle));
     disp(error);
-   % disp(count);
-    send(cmd_vel, cmd_vel_message)
+    %send(cmd_vel, cmd_vel_message)
     
-    %imshow(BW)
-    %hold on
-    %for k = 1:length(lines)
-    %    xy = [lines(k).point1; lines(k).point2];
-    %    plot(xy(:,1), xy(:,2), 'LineWidth', 2, 'Color', 'green');
-    %end
+    imshow(BW)
+    hold on
+    for k = 1:length(lines)
+        if lines(k).theta>0
+        xy = [lines(k).point1; lines(k).point2];
+        plot(xy(:,1), xy(:,2), 'LineWidth', 2, 'Color', 'green');
+        end
+    end
     
-    pause(0.05);
+   %pause(0.1);
 end
 
 %Magnetometer
@@ -120,24 +111,23 @@ end
 
 %% Callback functions:
 
-%IMU:
-function imu_Callback(src, message)
-global imu_data
-imu_data = message;
-end
-
-%MAGNETOMETER:
-function mag_Callback(src, message)
-global mag_data
-mag_data = message;
-end
+% %IMU:
+% function imu_Callback(src, message)
+% global imu_data
+% imu_data = message;
+% end
+% 
+% %MAGNETOMETER:
+% function mag_Callback(src, message)
+% global mag_data
+% mag_data = message;
+% end
 
 
 %CAMERA:
 function camera_Callback(src, message)
-global camera_data count
+global camera_data
 img = readImage(message);
 camera_data = flipdim((img),1); %Flip camera
-count=count+1;
 
 end
