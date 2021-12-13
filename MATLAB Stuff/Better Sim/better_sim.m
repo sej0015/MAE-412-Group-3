@@ -35,9 +35,11 @@ marker_estimates = zeros([2, num_markers, 1]); %Will be big array of all estimat
 initial_marker_estimates = zeros([3, num_markers]);
 sensing_radius = 1.5;
 camera_counter = 21;
+loop_counter = 0;
+counter = 1;
 
 %% Main Loop
-while true
+while loop_counter < 10
     %Get measurements from sensors
     [encoder_speed, gyro_rate] = get_measurement(pose(:, end), prev_pose, Ts);
     camera_counter = camera_counter + 1;
@@ -122,6 +124,7 @@ while true
         current_point = current_point + 1;
         if current_point > 4
             current_point = 1;
+            loop_counter = loop_counter + 1;
         end
     end
     
@@ -130,7 +133,14 @@ while true
     pose(:, end + 1) = update_kinematics(pose(:, end), cmd_vel, Ts);
     plot_world(pose, x, x_dead, markers, marker_measurements, marker_estimates);
     %cmd_vel(1) = cmd_vel(1) + 0.005;
+    FRAMES(counter) = getframe(gcf);
+    counter = counter + 1;
 end
+
+ video = VideoWriter('MAE_412_Aruco_Sim', 'MPEG-4');
+ open(video);
+ writeVideo(video, FRAMES);
+ close(video)
 
 %% Functions
 function pose = update_kinematics(pose, cmd_vel, Ts)
@@ -165,21 +175,33 @@ end
 function plot_world(pose, x, x_dead, markers, marker_measurements, marker_estimates)
 
     figure(1)
+    clf('reset');
+    plot(0, 0, 'b');
+    hold on
+    plot(0, 0, 'g');
+    plot(0, 0, 'r');
+    
+    
     %Plor true position as circle
     plot(pose(1, end), pose(2, end), 'bo', 'MarkerSize', 20);
-    hold on
     %Plot true position history
     plot(pose(1, :), pose(2, :), 'b');
     %Plot heading as straight line
     plot([pose(1, end), pose(1, end) + 0.2*cos(pose(3, end))], [pose(2, end), pose(2, end) + 0.2*sin(pose(3, end))], 'b');
     %Plot viewable area as green circle
     plot(pose(1, end) + 1.5 * cos(0:0.1:2*pi), pose(2, end) + 1.5 * sin(0:0.1:2*pi), 'g--');
+    
     %Plot believ position as circle
     plot(x(1, end), x(2, end), 'ro', 'MarkerSize', 20);
     %Plot heading as straight line
     plot([x(1, end), x(1, end) + 0.2*cos(x(3, end))], [x(2, end), x(2, end) + 0.2*sin(x(3, end))], 'r');
     %Plot belief position history
     plot(x(1, :), x(2, :), 'r');
+    
+    %Plot believ position as circle
+    plot(x_dead(1, end), x_dead(2, end), 'go', 'MarkerSize', 20);
+    %Plot heading as straight line
+    plot([x_dead(1, end), x_dead(1, end) + 0.2*cos(x_dead(3, end))], [x_dead(2, end), x_dead(2, end) + 0.2*sin(x_dead(3, end))], 'g');
     %Plot dead reconing belief position history
     plot(x_dead(1, :), x_dead(2, :), 'g');
     for i = 1:length(markers)
@@ -188,7 +210,7 @@ function plot_world(pose, x, x_dead, markers, marker_measurements, marker_estima
     hold off
     xlim([-1, 4]);
     ylim([-1, 4]);
-    
+    legend('Simulation Truth', 'Dead Reconing', 'Landmark Based Solution');
 %     figure(2)
 %     for i = 1:size(marker_measurements, 2)
 %         plot(marker_measurements(2, i), marker_measurements(3, i), '*');
